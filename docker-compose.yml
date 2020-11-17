@@ -4,9 +4,9 @@ services:
     pade:
         container_name: pade
         build: .
-        command: pade start-runtime 
+        command: pade start-runtime --config_file config.json
         ports:
-            - "8000:8000"
-
-
-  
+            - "8080:8000"
+            - "8081:20000"
+            - "8082:8001"
+            - "8083:5000"
