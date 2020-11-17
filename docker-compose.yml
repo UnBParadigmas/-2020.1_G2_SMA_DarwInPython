@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+    pade:
+        container_name: pade
+        build: .
+        command: pade start-runtime 
+        ports:
+            - "8000:8000"
+
+
+  
