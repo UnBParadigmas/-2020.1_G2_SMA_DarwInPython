@@ -10,3 +10,7 @@ services:
             - "8081:20000"
             - "8082:8001"
             - "8083:5000"
+        volumes:
+        - /tmp/.X11-unix:/tmp/.X11-unix
+        environment:
+        - DISPLAY=$DISPLAY
