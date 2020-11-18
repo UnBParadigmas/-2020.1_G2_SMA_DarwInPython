@@ -18,7 +18,8 @@ class GameAgent(Agent):
         self.board = Board()
         self.render = Render()
 
-
+        call_behaviour = CallOnTimeBehaviour(self, 1.0, self.update)
+        self.behaviours.append(call_behaviour)
 
     def update(self):
 
