@@ -4,22 +4,23 @@ from pade.core.agent import Agent
 from pade.acl.aid import AID
 from sys import argv
 
-class AgenteHelloWorld(Agent):
-    def __init__(self, aid):
-        super(AgenteHelloWorld, self).__init__(aid=aid)
-        display_message(self.aid.localname, 'Hello World!')
+from agents.game_agent import GameAgent
 
 
 if __name__ == '__main__':
 
-    agents_per_process = 3
+    agents_per_process = 1
     c = 0
+
     agents = list()
+
     for i in range(agents_per_process):
+
         port = int(argv[1]) + c
-        agent_name = 'agent_hello_{}@localhost:{}'.format(port, port)
-        agente_hello = AgenteHelloWorld(AID(name=agent_name))
-        agents.append(agente_hello)
+
+        game_agent = GameAgent(AID(name=f'game_agent_{port}@localhost:{port}'))
+        agents.append(game_agent)
+
         c += 1000
 
     start_loop(agents)
