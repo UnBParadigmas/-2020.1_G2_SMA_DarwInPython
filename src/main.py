@@ -1,26 +1,33 @@
 
-from pade.misc.utility import display_message, start_loop
-from pade.core.agent import Agent
 from pade.acl.aid import AID
 from sys import argv
 
 from agents.game_agent import GameAgent
-
+from app import DarwInPython
 
 if __name__ == '__main__':
 
-    agents_per_process = 1
-    c = 0
+    app = DarwInPython()
+    
+    port = int(argv[1])
 
-    agents = list()
+    game_agent = GameAgent(AID(name=f'game_agent_{port}@localhost:{port}'))
+    DarwInPython.add_agent_to_loop(game_agent)
+    
+    app.run()
 
-    for i in range(agents_per_process):
+    # agents_per_process = 1
+    # c = 0
 
-        port = int(argv[1]) + c
+    # agents = list()
 
-        game_agent = GameAgent(AID(name=f'game_agent_{port}@localhost:{port}'))
-        agents.append(game_agent)
+    # for i in range(agents_per_process):
 
-        c += 1000
+    #     port = int(argv[1]) + c
 
-    start_loop(agents)
+    #     game_agent = GameAgent(AID(name=f'game_agent_{port}@localhost:{port}'))
+    #     agents.append(game_agent)
+
+    #     c += 1000
+
+    # start_loop(agents)

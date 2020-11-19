@@ -1,16 +1,17 @@
 from random import getrandbits
 from pade.core.agent import Agent
 from pade.acl.aid import AID
-from pade.misc.utility import display_message
+from pade.misc.utility import display_message, start_loop
 
 from behaviours.call_on_time import CallOnTimeBehaviour
 
 from game.render import Render
 from game.board import Board
 from game.game_contants import GameConstants
+from agents.rabbit_agent import RabbitAgent
+from app import DarwInPython
 
 import random
-
 
 class GameAgent(Agent):
     
@@ -22,6 +23,8 @@ class GameAgent(Agent):
         self.board = Board()
         self.render = Render()
 
+        self._next_port = self.aid.getPort() + 1
+
         self.populate_board(
             inital_values = [
                 (GameConstants.RABBIT, 2)
@@ -31,14 +34,31 @@ class GameAgent(Agent):
         call_behaviour = CallOnTimeBehaviour(self, 1.0, self.update)
         self.behaviours.append(call_behaviour)
 
+    def _get_next_port_number(self):
+        
+        next_port = self._next_port
+        self._next_port += 1
+
+        return next_port
+
     def populate_board(self, inital_values: list):
         
         # each element in inital_values is a tuple with: (GameConstant.TYPE, amount)
         for grid_type, amount in inital_values:
             for _ in range(0, amount):
                 position = self.board.get_valid_position()
-                # TODO: instantiate agent
-                self.board.grid[position[0]][position[1]] = grid_type
+
+                if grid_type == GameConstants.RABBIT:
+                    new_agent_port = self._get_next_port_number()
+                    rabbit = RabbitAgent(
+                        AID(name=f'rabbit_agent_{new_agent_port}@localhost:{new_agent_port}'),
+                        position
+                    )
+                    DarwInPython.add_agent_to_loop(rabbit)
+                    
+                
+                self.board.set_position(grid_type, *position)
+
 
     def update(self):
 

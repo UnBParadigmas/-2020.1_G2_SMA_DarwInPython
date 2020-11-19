@@ -3,7 +3,7 @@
         "src/main.py"
     ],
     "port": 20000,
-    "num": 2,
+    "num": 1,
     "pade_ams": {
         "launch": true,
         "host": "localhost",
