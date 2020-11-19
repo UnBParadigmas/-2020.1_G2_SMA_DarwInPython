@@ -21,25 +21,6 @@ class MovementBehaviour(FipaContractNetProtocol):
     def replace_message(self, message):
         self.cfp = message
         self.message = message
-
-    # def on_start(self):
-    #     display_message(self.agent.aid.name, f'ON START RUNNING, message: {self.message}')
-
-    #     self.t1 = int(time())
-
-    #     if self.is_initiator and self.message is not None:
-    #         display_message(self.agent.aid.name, 'ON START FIRST IF')
-
-    #         if self.message.performative == ACLMessage.CFP:
-    #             display_message(self.agent.aid.name, 'ON START SECOND IF')
-
-    #             self.cfp_qty = len(self.message.receivers)
-    #             self.received_qty = 0
-    #             self.proposes = []
-    #             self.agent.send(self.message)
-
-    #             self.timed_behaviour()
-
     
     def handle_all_proposes(self, proposes):
 
@@ -66,7 +47,6 @@ class MovementBehaviour(FipaContractNetProtocol):
         )
         
         response = {
-            'lock_id': game_data['lock_id'],
             'caller_type': self.agent.game_type,
             'orginal_position': self.agent.position,
             'target_position': new_position
@@ -117,10 +97,8 @@ class MovementProviderBehaviour(FipaContractNetProtocol):
         answer = self.message.create_reply()
         answer.set_performative(ACLMessage.PROPOSE)
 
-        lock_id = self.agent.board.acquire_board_lock()
         data = {
             'grid': self.agent.board.grid,
-            'lock_id': lock_id
         }           
 
         answer.set_content(pickle.dumps(data))
@@ -136,18 +114,26 @@ class MovementProviderBehaviour(FipaContractNetProtocol):
         super(MovementProviderBehaviour, self).handle_accept_propose(message)
         display_message(self.agent.aid.name,
                         'ACCEPT_PROPOSE message received')
-
+        
+        content = ''
+        data = pickle.loads(message.content)
+        try:
+            self.agent.board.execute_move(
+                data['caller_type'],
+                data['orginal_position'],
+                data['target_position']
+            )
+            content = 'OK'
+        except Exception as e:
+            display_message(self.agent.aid.name,
+                            f'EXCEPTION: {e}')
+            content = 'ERROR'
+            
         answer = message.create_reply()
         answer.set_performative(ACLMessage.INFORM)
-        answer.set_content('OK')
+        answer.set_content(content)
         self.agent.send(answer)
 
-        data = pickle.loads(message.content)
 
-        self.agent.board.execute_move(
-            data['lock_id'],
-            data['caller_type'],
-            data['orginal_position'],
-            data['target_position']
-        )
+   
  

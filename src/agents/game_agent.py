@@ -28,13 +28,13 @@ class GameAgent(Agent):
 
         self.populate_board(
             inital_values = [
-                (GameConstants.RABBIT, 1)
+                (GameConstants.RABBIT, 2)
             ]
         )
 
         self.behaviours.append(CallOnTimeBehaviour(self, 0.1, self.update))
+        self.behaviours.append(CallOnTimeBehaviour(self, 1, self.add_carrots))
         self.behaviours.append(MovementProviderBehaviour(self))
-        
 
     def _get_next_port_number(self):
         
@@ -48,19 +48,22 @@ class GameAgent(Agent):
         # each element in inital_values is a tuple with: (GameConstant.TYPE, amount)
         for grid_type, amount in inital_values:
             for _ in range(0, amount):
-                position = self.board.get_valid_position()
+                with self.board.lock:
+                    position = self.board.get_valid_position()
 
-                if grid_type == GameConstants.RABBIT:
-                    new_agent_port = self._get_next_port_number()
-                    rabbit = RabbitAgent(
-                        AID(name=f'rabbit_agent_{new_agent_port}@localhost:{new_agent_port}'),
-                        position,
-                        self
-                    )
-                    DarwInPython.add_agent_to_loop(rabbit)
-                    
-                self.board.set_position(grid_type, *position)
+                    if grid_type == GameConstants.RABBIT:
+                        new_agent_port = self._get_next_port_number()
+                        rabbit = RabbitAgent(
+                            AID(name=f'rabbit_agent_{new_agent_port}@localhost:{new_agent_port}'),
+                            position,
+                            self
+                        )
+                        DarwInPython.add_agent_to_loop(rabbit)
+                        
+                    self.board.set_position(grid_type, *position)
 
+    def add_carrots(self):
+        self.populate_board([(GameConstants.CARROT, 1)])
 
     def update(self):
 

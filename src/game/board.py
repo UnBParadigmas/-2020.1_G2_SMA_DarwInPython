@@ -13,8 +13,6 @@ class Board:
 
         self.grid = []
         self.lock = threading.Lock()
-        self._current_locking_id = 0
-        self._next_locking_id = 1
 
         for line in range(0, self.SIZE[0]):
             columns = []        
@@ -50,22 +48,13 @@ class Board:
     def validate_movement(self, caller_type, original_position, target_position):
         self.validate_type(caller_type, original_position)
 
-    def acquire_board_lock(self):
-        self.lock.acquire()
-        return 0
+    def execute_move(self, caller_type, original_position, target_position):
 
-    def release(self, lock_id):
-        self.lock.release()
-        pass
+        with self.lock:
+            self.validate_movement(caller_type, original_position, target_position)
 
-    def execute_move(self, lock_id, caller_type, original_position, target_position):
-
-        self.validate_movement(caller_type, original_position, target_position)
-
-        self.set_position(GameConstants.GRASS, *original_position)
-        self.set_position(caller_type, *target_position)
-
-        self.release(lock_id)
+            self.set_position(GameConstants.GRASS, *original_position)
+            self.set_position(caller_type, *target_position)
 
             
             

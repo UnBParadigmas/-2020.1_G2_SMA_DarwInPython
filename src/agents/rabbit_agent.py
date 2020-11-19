@@ -41,7 +41,7 @@ class RabbitAgent(Agent):
     def launch_contract_net_protocol(self):
         display_message(self.aid.getLocalName(), "Running RabbitAgent.launch")
         self.additional_behaviours[1].replace_message(self._build_message_for_proposer())
-        self.call_later(1.0, self.additional_behaviours[1].on_start)
+        self.call_later(0.1, self.additional_behaviours[1].on_start)
 
     def update(self):
         display_message(self.aid.getLocalName(), "Running RabbitAgent.update")
