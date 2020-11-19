@@ -1,6 +1,7 @@
-import types
-from game.game_type import GameType
+import threading
+import random
 
+from game.game_contants import GameConstants
 
 class Board:
 
@@ -13,6 +14,6 @@ class Board:
         for line in range(0, self.SIZE[0]):
             columns = []        
             for col in range(0, self.SIZE[1]):
-                columns.append(GameType.GRASS)
+                columns.append(GameConstants.GRASS)
 
             self.grid.append(columns)

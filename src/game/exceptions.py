@@ -1,0 +1,3 @@
+class InvalidMovementException(Exception):
+    pass
+
