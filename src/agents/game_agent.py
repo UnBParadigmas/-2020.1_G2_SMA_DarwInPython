@@ -9,6 +9,7 @@ from game.render import Render
 from game.board import Board
 from game.game_contants import GameConstants
 from agents.rabbit_agent import RabbitAgent
+from behaviours.movement_behaviour import MovementProviderBehaviour
 from app import DarwInPython
 
 import random
@@ -27,12 +28,13 @@ class GameAgent(Agent):
 
         self.populate_board(
             inital_values = [
-                (GameConstants.RABBIT, 2)
+                (GameConstants.RABBIT, 1)
             ]
         )
 
-        call_behaviour = CallOnTimeBehaviour(self, 1.0, self.update)
-        self.behaviours.append(call_behaviour)
+        self.behaviours.append(CallOnTimeBehaviour(self, 0.1, self.update))
+        self.behaviours.append(MovementProviderBehaviour(self))
+        
 
     def _get_next_port_number(self):
         
@@ -52,23 +54,23 @@ class GameAgent(Agent):
                     new_agent_port = self._get_next_port_number()
                     rabbit = RabbitAgent(
                         AID(name=f'rabbit_agent_{new_agent_port}@localhost:{new_agent_port}'),
-                        position
+                        position,
+                        self
                     )
                     DarwInPython.add_agent_to_loop(rabbit)
                     
-                
                 self.board.set_position(grid_type, *position)
 
 
     def update(self):
 
-        display_message(self.aid.getLocalName(), "Running GameAgent.update")
+        # display_message(self.aid.getLocalName(), "Running GameAgent.update")
 
         # movement order:
         # wolf, rabbit
         # then:
         # generate carrots
 
-        self.populate_board([(GameConstants.CARROT, 1)])
+        #self.populate_board([(GameConstants.CARROT, 1)])
 
         self.render.draw(self.board)
