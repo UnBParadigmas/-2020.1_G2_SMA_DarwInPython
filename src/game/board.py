@@ -15,7 +15,7 @@ class Board:
         self.lock = threading.Lock()
 
         for line in range(0, self.SIZE[0]):
-            columns = []        
+            columns = []
             for col in range(0, self.SIZE[1]):
                 columns.append(GameConstants.GRASS)
 
@@ -47,6 +47,11 @@ class Board:
 
     def validate_movement(self, caller_type, original_position, target_position):
         self.validate_type(caller_type, original_position)
+        target_position_type = self.get_position(*target_position)
+        if caller_type == GameConstants.RABBIT and \
+            target_position_type not in [GameConstants.GRASS, GameConstants.CARROT]:
+
+            raise InvalidMovementException()
 
     def execute_move(self, caller_type, original_position, target_position):
 
@@ -55,7 +60,3 @@ class Board:
 
             self.set_position(GameConstants.GRASS, *original_position)
             self.set_position(caller_type, *target_position)
-
-            
-            
-            

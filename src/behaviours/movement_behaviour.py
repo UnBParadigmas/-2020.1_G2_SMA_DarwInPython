@@ -13,7 +13,7 @@ from time import time
 
 
 class MovementBehaviour(FipaContractNetProtocol):
-    
+
     def __init__(self, agent, message, vision_distance, movement_distance, food_type, reproduction_type):
         super(MovementBehaviour, self).__init__(
             agent=agent, message=message, is_initiator=True)
@@ -28,7 +28,7 @@ class MovementBehaviour(FipaContractNetProtocol):
     def replace_message(self, message):
         self.cfp = message
         self.message = message
-    
+
     def handle_all_proposes(self, proposes):
 
         super(MovementBehaviour, self).handle_all_proposes(proposes)
@@ -38,32 +38,55 @@ class MovementBehaviour(FipaContractNetProtocol):
 
         game_data = pickle.loads(proposes[0].content)
 
-        display_message(
-            self.agent.aid.name,
-            f'Received game data: {game_data}'
-        )
+        response = self.compute_next_position(game_data)
+        self.send_movement_response(response, proposes[0].sender)
+        
+    def compute_next_position(self, game_data):
+        
+        new_position = self.movement(game_data['grid'])
+
+        response = {
+            'caller_type': self.agent.game_type,
+            'orginal_position': self.agent.position,
+            'target_position': new_position
+        }
+        
+        self.agent.position = new_position
+        display_message(self.agent.aid.name,
+                        f'Moving from {response["orginal_position"]} to {new_position}')
+
+        return response
+
+    def send_movement_response(self, response, sender):
+        
+        answer = ACLMessage(ACLMessage.ACCEPT_PROPOSAL)
+        answer.set_protocol(ACLMessage.FIPA_CONTRACT_NET_PROTOCOL)
+        answer.set_content(pickle.dumps(response))
+        answer.add_receiver(sender)
+        self.agent.send(answer)
+
+    def movement(self, grid):
 
         size = (
-            len(game_data['grid'][0]),
-            len(game_data['grid'])
+            len(grid[0]),
+            len(grid)
         )
-     
+
         x, y = self.agent.position
         x_limits = (min(0, x - self.vision_distance), min(size[0], x + self.vision_distance))
         y_limits = (min(0, y - self.vision_distance), min(size[1], y + self.vision_distance))
 
-        target = None
 
+        target = None
         if self.agent.hunger < 50:
             target = self.food_type
         else:
             target = self.reproduction_type
 
-        closest_distance = None
-        closest_target = None
-        for current_x in range(x_limits[0], x_limits[1]):    
+        closest_distance, closest_target = None, None
+        for current_x in range(x_limits[0], x_limits[1]):
             for current_y in range(y_limits[0], y_limits[1]):
-                
+
                 if current_x == x and current_y == y:
                     continue
 
@@ -72,11 +95,11 @@ class MovementBehaviour(FipaContractNetProtocol):
                     or current_y >= size[1]\
                     or current_y < 0:
                     continue
-               
-                if game_data['grid'][current_x][current_y] == target:
-                
+
+                if grid[current_x][current_y] == target:
+
                     distance = abs(math.sqrt((x - current_x)**2 + (y - current_y)**2))
-                
+
                     if closest_distance is None or distance < closest_distance:
                         closest_distance = distance
                         closest_target = (current_x, current_y)
@@ -84,14 +107,14 @@ class MovementBehaviour(FipaContractNetProtocol):
         new_position = None
         if closest_target is None:
             display_message(self.agent.aid.name, f'Target is none')
-         
+
             new_position = (
                 self.agent.position[0] + 1 if 0 <= self.agent.position[0] + 1 < size[0] else 0,
                 self.agent.position[1]
             )
 
         else:
-         
+
             dist_x = closest_target[0] - x
             dist_y = closest_target[1] - y
 
@@ -113,7 +136,7 @@ class MovementBehaviour(FipaContractNetProtocol):
                 signal = 1 if dist_y >= 0 else -1
                 new_y = y + (value * signal)
                 new_x = x
-                
+
             new_position = (
                 new_x if 0 <= new_x < size[0] else 0,
                 new_y if 0 <= new_y < size[1] else 0
@@ -121,28 +144,25 @@ class MovementBehaviour(FipaContractNetProtocol):
             display_message(self.agent.aid.name, f'New position: X::{new_x} --- Y::{new_y}')
 
             max(0, min(size[0] -1, new_x))
-          
-        response = {
-            'caller_type': self.agent.game_type,
-            'orginal_position': self.agent.position,
-            'target_position': new_position
-        }
 
-        display_message(self.agent.aid.name,
-                        f'Moving from {response["orginal_position"]} to {new_position}')
-
-        self.agent.position = new_position
-        
-        answer = ACLMessage(ACLMessage.ACCEPT_PROPOSAL)
-        answer.set_protocol(ACLMessage.FIPA_CONTRACT_NET_PROTOCOL)
-        answer.set_content(pickle.dumps(response))
-        answer.add_receiver(proposes[0].sender)
-        self.agent.send(answer)
+        return new_position
 
     def handle_inform(self, message):
         # TODO: Deal with error on position set
         super(MovementBehaviour, self).handle_inform(message)
         display_message(self.agent.aid.name, 'INFORM message received')
+
+        data = pickle.loads(message.content)
+        display_message(self.agent.aid.name, f'INFORM data: {data}')
+
+        if data['msg'] != 'OK':
+            self.agent.position = data['orginal_position']
+            game_data = {
+                'grid': data['grid']
+            }
+
+            response = self.compute_next_position(game_data)
+            self.send_movement_response(response, message.sender)
 
     def handle_refuse(self, message):
         super(MovementBehaviour, self).handle_refuse(message)
@@ -153,7 +173,7 @@ class MovementBehaviour(FipaContractNetProtocol):
         display_message(self.agent.aid.name, 'PROPOSE message received')
 
 class MovementProviderBehaviour(FipaContractNetProtocol):
-   
+
     def __init__(self, agent):
         super(MovementProviderBehaviour, self).__init__(
             agent=agent,
@@ -176,7 +196,7 @@ class MovementProviderBehaviour(FipaContractNetProtocol):
 
         data = {
             'grid': self.agent.board.grid,
-        }           
+        }
 
         answer.set_content(pickle.dumps(data))
 
@@ -191,7 +211,7 @@ class MovementProviderBehaviour(FipaContractNetProtocol):
         super(MovementProviderBehaviour, self).handle_accept_propose(message)
         display_message(self.agent.aid.name,
                         'ACCEPT_PROPOSE message received')
-        
+
         content = ''
         data = pickle.loads(message.content)
         try:
@@ -200,17 +220,17 @@ class MovementProviderBehaviour(FipaContractNetProtocol):
                 data['orginal_position'],
                 data['target_position']
             )
-            content = 'OK'
+            content = {'msg': 'OK'}
         except Exception as e:
             display_message(self.agent.aid.name,
-                            f'EXCEPTION: {e}')
-            content = 'ERROR'
-            
+                            'EXCEPTION: Invalid Movement')
+            content = {
+                'msg': 'ERROR',
+                'orginal_position': data['orginal_position'],
+                'grid': self.agent.board.grid
+            } 
+
         answer = message.create_reply()
         answer.set_performative(ACLMessage.INFORM)
-        answer.set_content(content)
+        answer.set_content(pickle.dumps(content))
         self.agent.send(answer)
-
-
-   
- 
