@@ -28,10 +28,7 @@ class RemoveAgentBehaviour(FipaRequestProtocol):
             #display_message(self.aid.getLocalName(), "Received TYPE ERROR")
             return
 
-
-        display_message(self.agent.aid.getLocalName(), f"content: {message_content}")
         if 'action' in message_content.keys():
-            display_message(self.agent.aid.getLocalName(), f"ACTION is {message_content['action']}")
             if message_content['action'] == GameActions.KILL:
 
                 display_message(self.agent.aid.getLocalName(), f"Received KILL command: {message_content}")

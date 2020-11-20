@@ -1,5 +1,6 @@
 import threading
 import random
+import itertools
 
 from game.game_contants import GameConstants
 from game.exceptions import InvalidMovementException
@@ -33,13 +34,37 @@ class Board:
     def set_position(self, game_type, x, y):
         self.grid[x][y] = game_type
 
-    def get_valid_position(self):
+    def get_random_position(self):
 
         rand_pos = self._get_rand_pos()
         while self.get_position(*rand_pos) != GameConstants.GRASS:
             rand_pos = self._get_rand_pos()
 
         return rand_pos
+
+    def get_valid_position(self, position):
+        all_combinations = []
+        for i in range(position[0] - 1, position[0] + 2):
+            for j in range(position[1] - 1, position[1] + 2):
+                all_combinations.append((i, j))
+        
+
+        selected_position = None
+        for possible_position in all_combinations:
+
+            if not (
+                0 <= possible_position[0] < self.SIZE[0] \
+                and 0 <= possible_position[1] < self.SIZE[1]
+            ):
+                continue
+
+            target_position_type = self.get_position(*possible_position)
+            if target_position_type == GameConstants.GRASS:
+                selected_position = possible_position
+                break
+        
+        return selected_position
+        
 
     def validate_type(self, caller_type, original_position):
         if caller_type != self.get_position(*original_position):
@@ -65,3 +90,4 @@ class Board:
             self.set_position(caller_type, *target_position)
 
         return old_grid_value
+

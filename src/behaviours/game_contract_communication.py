@@ -57,7 +57,7 @@ class GameCommunicationInitiator(FipaContractNetProtocol):
         display_message(self.agent.aid.name, 'INFORM message received')
 
         data = pickle.loads(message.content)
-        display_message(self.agent.aid.name, f'INFORM data: {data}')
+        #display_message(self.agent.aid.name, f'INFORM data: {data}')
 
         if data['msg'] != 'OK':
             self.reset_event(message)

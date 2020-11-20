@@ -10,6 +10,7 @@ from game.render import Render
 from game.board import Board
 from game.game_contants import GameConstants, GameActions
 from agents.rabbit_agent import RabbitAgent
+# from agents.wolf_ import RabbitAgent
 from behaviours.movement_behaviour import MovementProviderBehaviour
 from behaviours.remove_agent_behaviour import RemoveAgentBehaviour
 from app import DarwInPython
@@ -32,13 +33,13 @@ class GameAgent(Agent):
 
         self.populate_board(
             inital_values = [
-                (GameConstants.RABBIT, 1)
+                (GameConstants.RABBIT, 10)
             ]
         )
 
         self.behaviours.append(CallOnTimeBehaviour(self, 0.1, self.update))
         self.behaviours.append(RemoveAgentBehaviour(self))
-        # self.behaviours.append(CallOnTimeBehaviour(self, 1, self.add_carrots))
+        self.behaviours.append(CallOnTimeBehaviour(self, 1, self.add_carrots))
         self.behaviours.append(MovementProviderBehaviour(self))
 
     def react(self, message):
@@ -71,24 +72,44 @@ class GameAgent(Agent):
 
         return next_port
 
+    def spawn_agent_close_to_position(self, agent_type, center_position):
+        
+        with self.board.lock:
+            
+            position = self.board.get_valid_position(center_position)
+            
+            if position is None:
+                return
+
+            self.spawn_agent(agent_type, position)
+        
+         
+    def spawn_agent(self, agent_type, position):
+        
+        if agent_type == GameConstants.RABBIT:
+
+            new_agent_port = self._get_next_port_number()
+          
+            rabbit = RabbitAgent(
+                AID(name=f'rabbit_agent_{new_agent_port}@localhost:{new_agent_port}'),
+                position,
+                self
+            )
+          
+            DarwInPython.add_agent_to_loop(rabbit)
+
+        self.board.set_position(agent_type, *position)
+
     def populate_board(self, inital_values: list):
         
         # each element in inital_values is a tuple with: (GameConstant.TYPE, amount)
         for grid_type, amount in inital_values:
             for _ in range(0, amount):
                 with self.board.lock:
-                    position = self.board.get_valid_position()
+                    position = self.board.get_random_position()
+                    
+                    self.spawn_agent(grid_type, position)
 
-                    if grid_type == GameConstants.RABBIT:
-                        new_agent_port = self._get_next_port_number()
-                        rabbit = RabbitAgent(
-                            AID(name=f'rabbit_agent_{new_agent_port}@localhost:{new_agent_port}'),
-                            position,
-                            self
-                        )
-                        DarwInPython.add_agent_to_loop(rabbit)
-
-                    self.board.set_position(grid_type, *position)
 
     def add_carrots(self):
         self.populate_board([(GameConstants.CARROT, 1)])

@@ -2,6 +2,7 @@ from sys import set_asyncgen_hooks
 from pade.misc.common import PadeSession
 from pade.misc.utility import start_loop
 from twisted.internet import reactor
+from pade.misc.utility import display_message
 
 from threading import Lock
 
@@ -43,7 +44,7 @@ class DarwInPython:
     def remove_agent_from_loop(agent_port, tries=0):
 
         if tries > 3:
-            return
+            raise Exception
 
         error = False
         with  DarwInPython.instance._agents_lock:
@@ -56,6 +57,8 @@ class DarwInPython:
 
             if index_to_remove is not None:
                 if agent_port == DarwInPython.instance.agents[index_to_remove].aid.port:
+                    DarwInPython.instance.agents[index_to_remove].ILP.stopListening()
+                    display_message('DarwInPython', f"REMOVE AGENT: {agent_port}")
                     DarwInPython.instance.agents.pop(index_to_remove)
                 else:
                     error = True
