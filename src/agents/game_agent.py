@@ -1,18 +1,22 @@
 from random import getrandbits
 from pade.core.agent import Agent
 from pade.acl.aid import AID
+from pade.acl.messages import ACLMessage
 from pade.misc.utility import display_message, start_loop
 
 from behaviours.call_on_time import CallOnTimeBehaviour
 
 from game.render import Render
 from game.board import Board
-from game.game_contants import GameConstants
+from game.game_contants import GameConstants, GameActions
 from agents.rabbit_agent import RabbitAgent
 from behaviours.movement_behaviour import MovementProviderBehaviour
+from behaviours.remove_agent_behaviour import RemoveAgentBehaviour
 from app import DarwInPython
 
 import random
+import pickle
+from pickle import dumps, loads
 
 class GameAgent(Agent):
     
@@ -28,13 +32,37 @@ class GameAgent(Agent):
 
         self.populate_board(
             inital_values = [
-                (GameConstants.RABBIT, 10)
+                (GameConstants.RABBIT, 1)
             ]
         )
 
         self.behaviours.append(CallOnTimeBehaviour(self, 0.1, self.update))
-        self.behaviours.append(CallOnTimeBehaviour(self, 1, self.add_carrots))
+        self.behaviours.append(RemoveAgentBehaviour(self))
+        # self.behaviours.append(CallOnTimeBehaviour(self, 1, self.add_carrots))
         self.behaviours.append(MovementProviderBehaviour(self))
+
+    def react(self, message):
+
+        if message.system_message:
+            for system_behaviour in self.system_behaviours:
+                system_behaviour.execute(message)
+        else:
+            for behaviour in self.behaviours:
+                #display_message(self.aid.getLocalName(), f"Sending message {message} to Behaviour: {behaviour}")
+                behaviour.execute(message)
+
+        if 'ams' not in message.sender.name and 'sniffer' not in self.aid.name:
+            # sends the received message to Sniffer
+            # building of the message to be sent to Sniffer.
+            _message = ACLMessage(ACLMessage.INFORM)
+            sniffer_aid = AID('sniffer@' + self.sniffer['name'] + ':' + str(self.sniffer['port']))
+            _message.add_receiver(sniffer_aid)
+            _message.set_content(dumps({
+            'ref' : 'MESSAGE',
+            'message' : message}))
+            _message.set_system_message(is_system_message=True)
+            self.send(_message)
+
 
     def _get_next_port_number(self):
         
@@ -59,7 +87,7 @@ class GameAgent(Agent):
                             self
                         )
                         DarwInPython.add_agent_to_loop(rabbit)
-                        
+
                     self.board.set_position(grid_type, *position)
 
     def add_carrots(self):

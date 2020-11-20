@@ -1,48 +1,31 @@
 from random import randint
 from pade.behaviours.protocols import TimedBehaviour
 from pade.acl.messages import ACLMessage
-from pade.behaviours.protocols import FipaContractNetProtocol
 from pade.misc.utility import display_message
 
 from game.board import Board
+from behaviours.game_contract_communication import GameCommunicationInitiator, GameCommunicationParticipant
 
-import pickle
 import random
 import math
 from time import time
 
-
-class MovementBehaviour(FipaContractNetProtocol):
+class MovementBehaviour(GameCommunicationInitiator):
 
     def __init__(self, agent, message, vision_distance, movement_distance, food_type, reproduction_type):
-        super(MovementBehaviour, self).__init__(
-            agent=agent, message=message, is_initiator=True)
-
-        self.replace_message(message)
+        super(MovementBehaviour, self).__init__(agent=agent, message=message)
 
         self.vision_distance = vision_distance
         self.movement_distance = movement_distance
         self.food_type = food_type
         self.reproduction_type = reproduction_type
 
-    def replace_message(self, message):
-        self.cfp = message
-        self.message = message
+        random.seed(self.agent.aid.port)
 
-    def handle_all_proposes(self, proposes):
+    def get_response(self, message):
 
-        super(MovementBehaviour, self).handle_all_proposes(proposes)
+        game_data = pickle.loads(message.content)
 
-        if len(proposes) < 1:
-            display_message(self.agent.aid.name, 'No PROPOSE Received')
-
-        game_data = pickle.loads(proposes[0].content)
-
-        response = self.compute_next_position(game_data)
-        self.send_movement_response(response, proposes[0].sender)
-        
-    def compute_next_position(self, game_data):
-        
         new_position = self.movement(game_data['grid'])
 
         response = {
@@ -57,14 +40,6 @@ class MovementBehaviour(FipaContractNetProtocol):
 
         return response
 
-    def send_movement_response(self, response, sender):
-        
-        answer = ACLMessage(ACLMessage.ACCEPT_PROPOSAL)
-        answer.set_protocol(ACLMessage.FIPA_CONTRACT_NET_PROTOCOL)
-        answer.set_content(pickle.dumps(response))
-        answer.add_receiver(sender)
-        self.agent.send(answer)
-
     def movement(self, grid):
 
         size = (
@@ -78,7 +53,7 @@ class MovementBehaviour(FipaContractNetProtocol):
 
 
         target = None
-        if self.agent.hunger < 50:
+        if self.agent.hunger > 10:
             target = self.food_type
         else:
             target = self.reproduction_type
@@ -108,9 +83,12 @@ class MovementBehaviour(FipaContractNetProtocol):
         if closest_target is None:
             display_message(self.agent.aid.name, f'Target is none')
 
+            new_x = self.agent.position[0] + randint(-1, 1)
+            new_y = self.agent.position[1] + randint(-1, 1)
+
             new_position = (
-                self.agent.position[0] + 1 if 0 <= self.agent.position[0] + 1 < size[0] else 0,
-                self.agent.position[1]
+                new_x if 0 <= new_x < size[0] else x,
+                new_y if 0 <= new_y < size[0] else y
             )
 
         else:
@@ -147,80 +125,34 @@ class MovementBehaviour(FipaContractNetProtocol):
 
         return new_position
 
-    def handle_inform(self, message):
-        # TODO: Deal with error on position set
-        super(MovementBehaviour, self).handle_inform(message)
-        display_message(self.agent.aid.name, 'INFORM message received')
-
+    
+    def reset_event(self, message):
         data = pickle.loads(message.content)
-        display_message(self.agent.aid.name, f'INFORM data: {data}')
+        self.agent.position = data['orginal_position']
 
-        if data['msg'] != 'OK':
-            self.agent.position = data['orginal_position']
-            game_data = {
-                'grid': data['grid']
-            }
+    def confirm_event(self, message):
+        data = pickle.loads(message.content)
+        if data['old_grid'] == self.food_type:
+            self.agent.hunger =  0
 
-            response = self.compute_next_position(game_data)
-            self.send_movement_response(response, message.sender)
+class MovementProviderBehaviour(GameCommunicationParticipant):
 
-    def handle_refuse(self, message):
-        super(MovementBehaviour, self).handle_refuse(message)
-        display_message(self.agent.aid.name, 'REFUSE message received')
-
-    def handle_propose(self, message):
-        super(MovementBehaviour, self).handle_propose(message)
-        display_message(self.agent.aid.name, 'PROPOSE message received')
-
-class MovementProviderBehaviour(FipaContractNetProtocol):
-
-    def __init__(self, agent):
-        super(MovementProviderBehaviour, self).__init__(
-            agent=agent,
-            message=None,
-            is_initiator=False
-        )
-
-    def handle_cfp(self, message):
-        display_message(self.agent.aid.name, 'handle CFP - call later')
-        self.agent.call_later(1.0, self._handle_cfp, message)
-
-    def _handle_cfp(self, message):
-        super(MovementProviderBehaviour, self).handle_cfp(message)
-        self.message = message
-
-        display_message(self.agent.aid.name, 'CFP message received')
-
-        answer = self.message.create_reply()
-        answer.set_performative(ACLMessage.PROPOSE)
-
-        data = {
+    def get_cfp_content(self, message):
+        return {
             'grid': self.agent.board.grid,
         }
-
-        answer.set_content(pickle.dumps(data))
-
-        self.agent.send(answer)
-
-    def handle_reject_propose(self, message):
-        super(MovementProviderBehaviour, self).handle_reject_propose(message)
-        display_message(self.agent.aid.name,
-                        'REJECT_PROPOSAL message received')
-
-    def handle_accept_propose(self, message):
-        super(MovementProviderBehaviour, self).handle_accept_propose(message)
-        display_message(self.agent.aid.name,
-                        'ACCEPT_PROPOSE message received')
+    
+    def create_inform_message(self, message):
 
         content = ''
         data = pickle.loads(message.content)
         try:
-            self.agent.board.execute_move(
+            old_grid = self.agent.board.execute_move(
                 data['caller_type'],
                 data['orginal_position'],
                 data['target_position']
             )
-            content = {'msg': 'OK'}
+            content = {'msg': 'OK', 'old_grid': old_grid}
         except Exception as e:
             display_message(self.agent.aid.name,
                             'EXCEPTION: Invalid Movement')
@@ -230,7 +162,4 @@ class MovementProviderBehaviour(FipaContractNetProtocol):
                 'grid': self.agent.board.grid
             } 
 
-        answer = message.create_reply()
-        answer.set_performative(ACLMessage.INFORM)
-        answer.set_content(pickle.dumps(content))
-        self.agent.send(answer)
+        return content

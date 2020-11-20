@@ -7,7 +7,7 @@ import sys
 
 class Render:
     
-    SCREEN_SIZE = (600, 600)
+    SCREEN_SIZE = (800, 800)
 
     def __init__(self):
         pygame.init()
@@ -16,8 +16,8 @@ class Render:
     def draw(self, board: Board):
         
         block_size = (
-            self.SCREEN_SIZE[0] / board.SIZE[0],
-            self.SCREEN_SIZE[1] / board.SIZE[1]
+            int(self.SCREEN_SIZE[0] / board.SIZE[0]),
+            int(self.SCREEN_SIZE[1] / board.SIZE[1])
         )
 
         # if pygame.event.EventType == pygame.QUIT:

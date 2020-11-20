@@ -3,15 +3,17 @@ class GameConstants:
     GRASS = 1
     RABBIT = 2
     CARROT = 3
+    # WOLF = 4
 
     COLORS = {
-        GRASS: (0, 255, 0),
+        GRASS: (0, 180, 50),
         RABBIT: (255, 255, 255),
-        CARROT: (255, 92, 0)
+        CARROT: (210, 61, 0)
+        # WOLF: (125, 125, 125)
     }
 
-    class Actions:
-        MOVE = 'move'
-        EAT = 'eat'
-        REPRODUCE = 'reproduce'
-        INQUIRE = 'inquire'
+class GameActions:
+    MOVE = 'move'
+    EAT = 'eat'
+    REPRODUCE = 'reproduce'
+    KILL = 'kill'

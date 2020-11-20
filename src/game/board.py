@@ -7,7 +7,7 @@ from game.exceptions import InvalidMovementException
 
 class Board:
 
-    SIZE = (30, 30)
+    SIZE = (70, 70)
 
     def __init__(self):
 
@@ -55,8 +55,13 @@ class Board:
 
     def execute_move(self, caller_type, original_position, target_position):
 
+        old_grid_value = None
         with self.lock:
             self.validate_movement(caller_type, original_position, target_position)
+            
+            old_grid_value = self.get_position(*target_position) 
 
             self.set_position(GameConstants.GRASS, *original_position)
             self.set_position(caller_type, *target_position)
+
+        return old_grid_value
