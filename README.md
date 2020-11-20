@@ -13,7 +13,7 @@
 | 15/0135521  | Leonardo dos S. S. Barreiros |
 
 ## Sobre 
-DarwInPython é um projeto que utiliza dos Paradigmas Sistemas Multi-Agentes e Concorrentes para simular uma cadeia alimentar. Com ele é possivel ver a interação de Cenouras, Coelhos e Lobos em um campo, onde é possivel ver as interações da cadeia alimentar (Coelhos comem Cenouras e Lobos caçam Coelhos) e a reprodução dos animais.
+DarwInPython é um projeto que utiliza dos Paradigmas Sistemas Multi-Agentes e Concorrentes para simular uma cadeia alimentar. Com ele é possivel ver a interação de Cenouras, Coelhos e Lobos em um campo, onde ocorrem as interações da cadeia alimentar (Coelhos comem Cenouras e Lobos caçam Coelhos) e a reprodução dos animais.
 
 ## Screenshots
 Adicione 2 ou mais screenshots do projeto em termos de interface e/ou funcionamento.
@@ -36,12 +36,17 @@ pip install -r requirements
 Para executar o programa utilizando Docker, rode os seguintes comandos:
 
 ```sh
+// Permitir conexão com o servidor X da máquina (Ubuntu)
 xhost +
 
+// caso sucesso você verá: 
+$ access control disabled, clients can connect from any host
+
+// a seguir execute
 docker-compose up
 ```
 
-**OBS.:** Essa forma de rodar com o docker funciona somente no Ubuntu.
+**OBS.:** Essa forma de rodar com o docker funciona somente no **Ubuntu**.
 
 #### Rodando o programa sem Docker
 
