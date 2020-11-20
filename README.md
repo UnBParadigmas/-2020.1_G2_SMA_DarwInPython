@@ -13,20 +13,45 @@
 | 15/0135521  | Leonardo dos S. S. Barreiros |
 
 ## Sobre 
-Descreva o seu projeto em linhas gerais. 
+DarwInPython é um projeto que utiliza dos Paradigmas Sistemas Multi-Agentes e Concorrentes para simular uma cadeia alimentar. Com ele é possivel ver a interação de Cenouras, Coelhos e Lobos em um campo, onde é possivel ver as interações da cadeia alimentar (Coelhos comem Cenouras e Lobos caçam Coelhos) e a reprodução dos animais.
 
 ## Screenshots
 Adicione 2 ou mais screenshots do projeto em termos de interface e/ou funcionamento.
 
 ## Instalação 
-**Linguagens**: Python<br>
-**Tecnologias**: xxxxxx<br>
-Descreva os pré-requisitos para rodar o seu projeto e os comandos necessários.
-Insira um manual ou um script para auxiliar ainda mais.
+**Linguagens**: Python 3.7<br>
+**Tecnologias**: Bibliotecas Pade e Pygame<br>
+
+#### Instalação para rodar o programa sem Docker
+ Para executar o programa é necessário ter Python 3.7 instalado, assim como o Pip. Recomendamos a utilização de um `virtualenv`.
+ 
+ Para fazer as instalações das bibliotecas utilizadas rode o comando abaixo:
+
+```sh
+pip install -r requirements
+``` 
 
 ## Uso 
-Explique como usar seu projeto, caso haja algum passo a passo após o comando de execução.
+#### Rodando o programa com Docker
+Para executar o programa utilizando Docker, rode os seguintes comandos:
 
+```sh
+xhost +
+
+docker-compose up
+```
+
+**OBS.:** Essa forma de rodar com o docker funciona somente no Ubuntu.
+
+#### Rodando o programa sem Docker
+
+Para rodar o programa sem Docker, faça a instalação das bibliotecas utilizando o `pip`, e em seguida rode o comando:
+
+```sh
+pade start-runtime --config_file config.json
+```
+
+ 
 ## Vídeo
 Adicione 1 ou mais vídeos com a execução do projeto.
 
