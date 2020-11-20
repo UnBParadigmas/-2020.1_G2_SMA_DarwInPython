@@ -24,7 +24,7 @@ class RabbitAgent(Agent):
 
         self.additional_behaviours = [
             CallOnTimeBehaviour(self, 0.5, self.update),
-            MovementBehaviour(self, self._build_message_for_proposer())
+            MovementBehaviour(self, self._build_message_for_proposer(), 100, 1, GameConstants.CARROT, GameConstants.RABBIT)
         ]
 
         for behaviour in self.additional_behaviours:

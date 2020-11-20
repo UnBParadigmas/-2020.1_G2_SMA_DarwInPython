@@ -8,15 +8,22 @@ from game.board import Board
 
 import pickle
 import random
+import math
 from time import time
 
 
 class MovementBehaviour(FipaContractNetProtocol):
     
-    def __init__(self, agent, message):
+    def __init__(self, agent, message, vision_distance, movement_distance, food_type, reproduction_type):
         super(MovementBehaviour, self).__init__(
             agent=agent, message=message, is_initiator=True)
+
         self.replace_message(message)
+
+        self.vision_distance = vision_distance
+        self.movement_distance = movement_distance
+        self.food_type = food_type
+        self.reproduction_type = reproduction_type
 
     def replace_message(self, message):
         self.cfp = message
@@ -40,12 +47,81 @@ class MovementBehaviour(FipaContractNetProtocol):
             len(game_data['grid'][0]),
             len(game_data['grid'])
         )
+     
+        x, y = self.agent.position
+        x_limits = (min(0, x - self.vision_distance), min(size[0], x + self.vision_distance))
+        y_limits = (min(0, y - self.vision_distance), min(size[1], y + self.vision_distance))
 
-        new_position = (
-            self.agent.position[0] + 1 if self.agent.position[0] + 1 < size[0] else 0,
-            self.agent.position[1]
-        )
-        
+        target = None
+
+        if self.agent.hunger < 50:
+            target = self.food_type
+        else:
+            target = self.reproduction_type
+
+        closest_distance = None
+        closest_target = None
+        for current_x in range(x_limits[0], x_limits[1]):    
+            for current_y in range(y_limits[0], y_limits[1]):
+                
+                if current_x == x and current_y == y:
+                    continue
+
+                if current_x >= size[0] \
+                    or current_x < 0 \
+                    or current_y >= size[1]\
+                    or current_y < 0:
+                    continue
+               
+                if game_data['grid'][current_x][current_y] == target:
+                
+                    distance = abs(math.sqrt((x - current_x)**2 + (y - current_y)**2))
+                
+                    if closest_distance is None or distance < closest_distance:
+                        closest_distance = distance
+                        closest_target = (current_x, current_y)
+
+        new_position = None
+        if closest_target is None:
+            display_message(self.agent.aid.name, f'Target is none')
+         
+            new_position = (
+                self.agent.position[0] + 1 if 0 <= self.agent.position[0] + 1 < size[0] else 0,
+                self.agent.position[1]
+            )
+
+        else:
+         
+            dist_x = closest_target[0] - x
+            dist_y = closest_target[1] - y
+
+            display_message(self.agent.aid.name, f'Target: {target} -- Closest Target: {closest_target} -- dists: {[dist_x, dist_y]}')
+
+            new_x = None
+            new_y = None
+            if abs(dist_x) < abs(dist_y) and dist_x != 0 or dist_y == 0:
+                # move on x
+                display_message(self.agent.aid.name, f'Move on X')
+                value = min(abs(dist_x), self.movement_distance)
+                signal = 1 if dist_x >= 0 else -1
+                new_x = x + (value * signal)
+                new_y = y
+            elif abs(dist_x) >= abs(dist_y) and dist_y != 0 or dist_x == 0:
+                # move on y
+                display_message(self.agent.aid.name, f'Move on Y')
+                value = min(abs(dist_y), self.movement_distance)
+                signal = 1 if dist_y >= 0 else -1
+                new_y = y + (value * signal)
+                new_x = x
+                
+            new_position = (
+                new_x if 0 <= new_x < size[0] else 0,
+                new_y if 0 <= new_y < size[1] else 0
+            )
+            display_message(self.agent.aid.name, f'New position: X::{new_x} --- Y::{new_y}')
+
+            max(0, min(size[0] -1, new_x))
+          
         response = {
             'caller_type': self.agent.game_type,
             'orginal_position': self.agent.position,
@@ -64,6 +140,7 @@ class MovementBehaviour(FipaContractNetProtocol):
         self.agent.send(answer)
 
     def handle_inform(self, message):
+        # TODO: Deal with error on position set
         super(MovementBehaviour, self).handle_inform(message)
         display_message(self.agent.aid.name, 'INFORM message received')
 

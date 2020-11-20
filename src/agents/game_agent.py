@@ -28,7 +28,7 @@ class GameAgent(Agent):
 
         self.populate_board(
             inital_values = [
-                (GameConstants.RABBIT, 2)
+                (GameConstants.RABBIT, 10)
             ]
         )
 
