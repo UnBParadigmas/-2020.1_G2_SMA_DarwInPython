@@ -71,5 +71,4 @@ pade start-runtime --config_file config.json
 
 O Vídeo da apresentação está disponível abaixo:
 
-[<img src="https://img.youtube.com/vi/Y3r-QRjGB8Q/maxresdefault.jpg">](https://youtu.be/Y3r-QRjGB8Q)
-
+[<img src="https://img.youtube.com/vi/2cjX38g8cgs/maxresdefault.jpg">](https://youtu.be/2cjX38g8cgs)
