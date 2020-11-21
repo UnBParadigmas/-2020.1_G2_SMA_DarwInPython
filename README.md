@@ -17,7 +17,7 @@
 
 O projeto DarwInPython foi desenvolvido pelo corpo discente da disciplina de Paradigmas de Programação no ano de 2020 pela Universidade de Brasília. 
 
-O projeto que utiliza os Paradigmas Sistemas Multi-Agentes e Concorrentes para simular uma cadeia alimentar. Com ele é possivel ver as ações de Cenouras, Coelhos e Lobos em um campo, onde ocorrem as interações da cadeia alimentar (Coelhos comem Cenouras e Lobos caçam Coelhos). Também existe um mecanismo de reprodução entre animais de mesma espécie com base no nível de 'fome'.
+O projeto utiliza os Paradigmas Sistemas Multi-Agentes e Concorrentes para simular uma cadeia alimentar. Com ele é possivel ver as ações de Cenouras, Coelhos e Lobos em um campo, onde ocorrem as interações da cadeia alimentar (Coelhos comem Cenouras e Lobos caçam Coelhos). Também existe um mecanismo de reprodução entre animais de mesma espécie com base no nível de 'fome'.
 
 ## Screenshots
 
