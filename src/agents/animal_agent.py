@@ -13,7 +13,7 @@ import pickle
 
 
 class AnimalAgent(Agent):
-    def __init__(self, aid, initial_position, game_agent, game_type, food_type, vision_distance):
+    def __init__(self, aid, initial_position, game_agent, game_type, food_type):
         super(AnimalAgent, self).__init__(aid=aid)
 
         self.position = initial_position
@@ -22,7 +22,9 @@ class AnimalAgent(Agent):
 
         self.game_type = game_type
         self.food_type = food_type
-        self.vision_distance = vision_distance
+        self.vision_distance = 10
+        self.hunger_limit = 60
+        self.max_hunger = 30
 
         self.alive = True
 
@@ -31,7 +33,6 @@ class AnimalAgent(Agent):
             MovementBehaviour(
                 self,
                 self._build_message_for_proposer(),
-                self.vision_distance,
                 1,
                 self.food_type,
                 self.game_type
@@ -70,7 +71,7 @@ class AnimalAgent(Agent):
         self.call_later(3, self.additional_behaviours[0].stop)
 
     def update(self):
-        if self.hunger >= 60:
+        if self.hunger >= self.hunger_limit:
             self.alive = False
 
         if not self.alive:

@@ -10,7 +10,7 @@ from game.render import Render
 from game.board import Board
 from game.game_contants import GameConstants, GameActions
 from agents.rabbit_agent import RabbitAgent
-# from agents.wolf_ import RabbitAgent
+from agents.wolf_agent import WolfAgent
 from behaviours.movement_behaviour import MovementProviderBehaviour
 from behaviours.remove_agent_behaviour import RemoveAgentBehaviour
 from app import DarwInPython
@@ -33,7 +33,8 @@ class GameAgent(Agent):
 
         self.populate_board(
             inital_values = [
-                (GameConstants.RABBIT, 10)
+                (GameConstants.RABBIT, 10),
+                (GameConstants.WOLF, 4)
             ]
         )
 
@@ -85,18 +86,25 @@ class GameAgent(Agent):
         
          
     def spawn_agent(self, agent_type, position):
-        
-        if agent_type == GameConstants.RABBIT:
+        new_agent_port = self._get_next_port_number()
 
-            new_agent_port = self._get_next_port_number()
-          
-            rabbit = RabbitAgent(
+        animal = None        
+        if agent_type == GameConstants.RABBIT: 
+            animal = RabbitAgent(
                 AID(name=f'rabbit_agent_{new_agent_port}@localhost:{new_agent_port}'),
                 position,
                 self
             )
           
-            DarwInPython.add_agent_to_loop(rabbit)
+        if agent_type == GameConstants.WOLF:          
+            animal = WolfAgent(
+                AID(name=f'wolf_agent_{new_agent_port}@localhost:{new_agent_port}'),
+                position,
+                self
+            )
+       
+        if animal is not None:   
+            DarwInPython.add_agent_to_loop(animal)
 
         self.board.set_position(agent_type, *position)
 

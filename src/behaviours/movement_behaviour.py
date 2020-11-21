@@ -6,6 +6,9 @@ from pade.misc.utility import display_message
 from game.game_contants import GameConstants, GameActions
 from game.board import Board
 from behaviours.game_contract_communication import GameCommunicationInitiator, GameCommunicationParticipant
+from game.exceptions import InvalidMovementTargetException, InvalidMovimentOriginException
+
+
 
 import random
 import math
@@ -14,10 +17,9 @@ import pickle
 
 class MovementBehaviour(GameCommunicationInitiator):
 
-    def __init__(self, agent, message, vision_distance, movement_distance, food_type, reproduction_type):
+    def __init__(self, agent, message, movement_distance, food_type, reproduction_type):
         super(MovementBehaviour, self).__init__(agent=agent, message=message)
 
-        self.vision_distance = vision_distance
         self.movement_distance = movement_distance
         self.food_type = food_type
         self.reproduction_type = reproduction_type
@@ -49,8 +51,8 @@ class MovementBehaviour(GameCommunicationInitiator):
         )
 
         x, y = self.agent.position
-        x_limits = (min(0, x - self.vision_distance), min(size[0], x + self.vision_distance))
-        y_limits = (min(0, y - self.vision_distance), min(size[1], y + self.vision_distance))
+        x_limits = (min(0, x - self.agent.vision_distance), min(size[0], x + self.agent.vision_distance))
+        y_limits = (min(0, y - self.agent.vision_distance), min(size[1], y + self.agent.vision_distance))
 
         target = self.select_target()
 
@@ -74,7 +76,7 @@ class MovementBehaviour(GameCommunicationInitiator):
         return action
 
     def select_target(self):
-        if self.agent.hunger > 30:
+        if self.agent.hunger > self.agent.max_hunger:
             return self.food_type
         else:
             return self.reproduction_type
@@ -161,8 +163,11 @@ class MovementBehaviour(GameCommunicationInitiator):
             self.agent.hunger =  0
 
     def reset_event(self, message):
-        data = pickle.loads(message.content)
+        data = pickle.loads(message.content)        
         self.agent.position = data['orginal_position']
+ 
+        if 'alive' in data and data['alive'] is False:
+            self.agent.alive = False
 
     def confirm_event(self, message):
         data = pickle.loads(message.content)
@@ -194,8 +199,17 @@ class MovementProviderBehaviour(GameCommunicationParticipant):
                     data['target_position']
                 )
                 content = {'msg': 'OK', 'old_grid': old_grid}
-            except:
-                display_message(self.agent.aid.name, 'EXCEPTION: Invalid Movement')
+            except InvalidMovimentOriginException:
+                display_message(self.agent.aid.name, 'EXCEPTION: Invalid Movement Origin')
+                content = {
+                    'msg': 'ERROR',
+                    'alive': False,
+                    'orginal_position': data['orginal_position'],
+                    'grid': self.agent.board.grid
+                }
+
+            except InvalidMovementTargetException:
+                display_message(self.agent.aid.name, 'EXCEPTION: Invalid Movement Target')
                 content = {
                     'msg': 'ERROR',
                     'orginal_position': data['orginal_position'],

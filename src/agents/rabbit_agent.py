@@ -9,5 +9,7 @@ class RabbitAgent(AnimalAgent):
             game_agent=game_agent,
             game_type=GameConstants.RABBIT,
             food_type=GameConstants.CARROT,
-            vision_distance=10
         )
+        self.vision_distance = 10
+        self.hunger_limit = 60
+        self.max_hunger = 30

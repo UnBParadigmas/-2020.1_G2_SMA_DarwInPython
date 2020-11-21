@@ -3,7 +3,7 @@ import random
 import itertools
 
 from game.game_contants import GameConstants
-from game.exceptions import InvalidMovementException
+from game.exceptions import InvalidMovementException, InvalidMovementTargetException, InvalidMovimentOriginException
 
 
 class Board:
@@ -68,7 +68,7 @@ class Board:
 
     def validate_type(self, caller_type, original_position):
         if caller_type != self.get_position(*original_position):
-            raise InvalidMovementException()
+            raise InvalidMovimentOriginException()
 
     def validate_movement(self, caller_type, original_position, target_position):
         self.validate_type(caller_type, original_position)
@@ -76,7 +76,7 @@ class Board:
         if caller_type == GameConstants.RABBIT and \
             target_position_type not in [GameConstants.GRASS, GameConstants.CARROT]:
 
-            raise InvalidMovementException()
+            raise InvalidMovementTargetException()
 
     def execute_move(self, caller_type, original_position, target_position):
 
