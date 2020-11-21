@@ -21,8 +21,8 @@ O projeto utiliza os Paradigmas Sistemas Multi-Agentes e Concorrentes para simul
 
 ## Screenshots
 
-<!-- [Inicio do game](images/) -->
-<!-- [Após interações](images/) -->
+![Inicio do game](img/img1.jpg)
+![Após interações](img/img2.jpg)
 
 ## Instalação
 
@@ -36,7 +36,7 @@ Para executar o programa é necessário ter Python 3.7 instalado, assim como o P
 Para fazer as instalações das bibliotecas utilizadas rode o comando abaixo:
 
 ```sh
-pip install -r requirements
+pip install -r requirements.txt
 ```
 
 ## Uso
@@ -73,10 +73,3 @@ O Vídeo da apresentação está disponível abaixo:
 
 [<img src="https://img.youtube.com/vi/Y3r-QRjGB8Q/maxresdefault.jpg">](https://youtu.be/Y3r-QRjGB8Q)
 
-## Outros
-
-Quaisquer outras informações sobre seu projeto podem ser descritas a seguir.
-
-## Fontes
-
-Caso utilize materiais de terceiros, referencie-os adequadamente.
