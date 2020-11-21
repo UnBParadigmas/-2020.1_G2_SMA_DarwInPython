@@ -71,12 +71,21 @@ class Board:
             raise InvalidMovimentOriginException()
 
     def validate_movement(self, caller_type, original_position, target_position):
+        
         self.validate_type(caller_type, original_position)
-        target_position_type = self.get_position(*target_position)
-        if caller_type == GameConstants.RABBIT and \
-            target_position_type not in [GameConstants.GRASS, GameConstants.CARROT]:
 
-            raise InvalidMovementTargetException()
+        target_position_type = self.get_position(*target_position)
+
+        accepted_destinations = {
+            GameConstants.RABBIT: [GameConstants.GRASS, GameConstants.CARROT],
+            GameConstants.WOLF: [GameConstants.GRASS, GameConstants.RABBIT]
+        }
+
+        if caller_type in accepted_destinations.keys() and \
+            target_position_type not in accepted_destinations[caller_type]:
+
+            if not original_position == target_position:
+                raise InvalidMovementTargetException()
 
     def execute_move(self, caller_type, original_position, target_position):
 

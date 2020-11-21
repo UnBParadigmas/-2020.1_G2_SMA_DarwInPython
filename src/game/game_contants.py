@@ -9,7 +9,7 @@ class GameConstants:
         GRASS: (0, 180, 50),
         RABBIT: (255, 255, 255),
         CARROT: (210, 61, 0),
-        WOLF: (135, 135, 135)
+        WOLF: (90, 80, 90)
     }
 
 class GameActions:

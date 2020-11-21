@@ -12,6 +12,12 @@ class GameCommunicationInitiator(FipaContractNetProtocol):
 
         self.replace_message(message)
 
+    def on_start(self):
+
+        display_message(self.agent.aid.name, 'Starting GameCommunicationInitiator')
+
+        super(GameCommunicationInitiator, self).on_start()
+
     def replace_message(self, message):
         # used to fix cases where the communication would stop,
         # restarts the message to an initial state

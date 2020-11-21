@@ -13,3 +13,4 @@ class RabbitAgent(AnimalAgent):
         self.vision_distance = 10
         self.hunger_limit = 60
         self.max_hunger = 30
+        self.hunger = self.max_hunger - 5

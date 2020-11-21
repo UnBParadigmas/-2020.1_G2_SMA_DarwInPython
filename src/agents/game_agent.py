@@ -31,17 +31,17 @@ class GameAgent(Agent):
 
         self._next_port = self.aid.getPort() + 1
 
+        self.behaviours.append(CallOnTimeBehaviour(self, 0.01, self.update))
+        self.behaviours.append(RemoveAgentBehaviour(self))
+        self.behaviours.append(CallOnTimeBehaviour(self, 1, self.add_carrots))
+        self.behaviours.append(MovementProviderBehaviour(self))
+
         self.populate_board(
             inital_values = [
                 (GameConstants.RABBIT, 10),
                 (GameConstants.WOLF, 4)
             ]
         )
-
-        self.behaviours.append(CallOnTimeBehaviour(self, 0.1, self.update))
-        self.behaviours.append(RemoveAgentBehaviour(self))
-        self.behaviours.append(CallOnTimeBehaviour(self, 1, self.add_carrots))
-        self.behaviours.append(MovementProviderBehaviour(self))
 
     def react(self, message):
 
@@ -123,14 +123,4 @@ class GameAgent(Agent):
         self.populate_board([(GameConstants.CARROT, 1)])
 
     def update(self):
-
-        # display_message(self.aid.getLocalName(), "Running GameAgent.update")
-
-        # movement order:
-        # wolf, rabbit
-        # then:
-        # generate carrots
-
-        #self.populate_board([(GameConstants.CARROT, 1)])
-
         self.render.draw(self.board)

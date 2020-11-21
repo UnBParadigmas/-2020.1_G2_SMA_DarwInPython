@@ -24,7 +24,6 @@ class MovementBehaviour(GameCommunicationInitiator):
         self.food_type = food_type
         self.reproduction_type = reproduction_type
 
-        random.seed(self.agent.aid.port)
 
     def get_response(self, message):
 
@@ -66,10 +65,16 @@ class MovementBehaviour(GameCommunicationInitiator):
         else:
             dist_x = closest_target[0] - x
             dist_y = closest_target[1] - y
+
             
-            if target == self.reproduction_type and abs(dist_x) + abs(dist_y) == 1:
+            
+            if target == self.reproduction_type and abs(dist_x) + abs(dist_y) == 2:
+                display_message(self.agent.aid.name, f'Closest target: {closest_target}, {dist_x, dist_y}, {self.agent.position} ')
                 action = self.reproduce(x, y)
 
+            elif target == self.reproduction_type and abs(dist_x) + abs(dist_y) == 1:
+                action = self.random_move(x, y, size)
+                
             else:
                 action = self.move(x, y, size, dist_x, dist_y)
                 
@@ -176,8 +181,10 @@ class MovementBehaviour(GameCommunicationInitiator):
 class MovementProviderBehaviour(GameCommunicationParticipant):
 
     def get_cfp_content(self, message):
+        content = pickle.loads(message.content)
         return {
             'grid': self.agent.board.grid,
+            'position': content['position']
         }
     
     def create_inform_message(self, message):
@@ -190,7 +197,7 @@ class MovementProviderBehaviour(GameCommunicationParticipant):
                 data['orginal_position']
             )     
 
-            content = {'msg': 'OK', 'old_grid': data['caller_type']}
+            content = {'msg': 'OK', 'old_grid': data['caller_type'], 'target_position': data['target_position'], 'position': data['orginal_position']}
         else:
             try:
                 old_grid = self.agent.board.execute_move(
@@ -198,14 +205,16 @@ class MovementProviderBehaviour(GameCommunicationParticipant):
                     data['orginal_position'],
                     data['target_position']
                 )
-                content = {'msg': 'OK', 'old_grid': old_grid}
+                content = {'msg': 'OK', 'old_grid': old_grid, 'target_position': data['target_position'], 'position': data['target_position']}
             except InvalidMovimentOriginException:
                 display_message(self.agent.aid.name, 'EXCEPTION: Invalid Movement Origin')
+                
                 content = {
                     'msg': 'ERROR',
                     'alive': False,
                     'orginal_position': data['orginal_position'],
-                    'grid': self.agent.board.grid
+                    'grid': self.agent.board.grid,
+                    'position': data['orginal_position']
                 }
 
             except InvalidMovementTargetException:
@@ -213,7 +222,8 @@ class MovementProviderBehaviour(GameCommunicationParticipant):
                 content = {
                     'msg': 'ERROR',
                     'orginal_position': data['orginal_position'],
-                    'grid': self.agent.board.grid
+                    'grid': self.agent.board.grid,
+                    'position': data['orginal_position']
                 } 
 
         return content

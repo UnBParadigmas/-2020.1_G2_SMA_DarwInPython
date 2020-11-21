@@ -11,7 +11,8 @@ class WolfAgent(AnimalAgent):
             game_type=GameConstants.WOLF,
             food_type=GameConstants.RABBIT,
         )
+
         self.vision_distance = 40
         self.hunger_limit = 75
         self.max_hunger = 20
-        
+        self.hunger = self.max_hunger - 5

@@ -17,8 +17,8 @@ class AnimalAgent(Agent):
         super(AnimalAgent, self).__init__(aid=aid)
 
         self.position = initial_position
-        self.hunger = 0
         self.game_agent = game_agent
+        self.hunger = 0
 
         self.game_type = game_type
         self.food_type = food_type
@@ -48,6 +48,8 @@ class AnimalAgent(Agent):
 
         message.add_receiver(self.game_agent.aid)
 
+        message.content = pickle.dumps({'position': self.position})
+
         return message
 
     def launch_contract_net_protocol(self):
@@ -71,7 +73,8 @@ class AnimalAgent(Agent):
         self.call_later(3, self.additional_behaviours[0].stop)
 
     def update(self):
-        if self.hunger >= self.hunger_limit:
+        if self.hunger >= self.hunger_limit and self.alive:
+            display_message(self.aid.localname, 'Killing agent due to hunger')
             self.alive = False
 
         if not self.alive:
