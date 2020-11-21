@@ -1,6 +1,6 @@
 # DarwInPython
 
-**Disciplina**: FGA0210 - PARADIGMAS DE PROGRAMAÇÃO - T01 <br>
+**Disciplina**: FGA0210 - PARADIGMAS DE PROGRAMAÇÃO - T03 <br>
 **Nro do Grupo**: 02<br>
 **Paradigma**: SMA<br>
 
